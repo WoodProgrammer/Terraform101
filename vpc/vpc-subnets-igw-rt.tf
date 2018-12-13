@@ -8,7 +8,6 @@ provider "aws" {
   secret_key = "${var.AWS_SECRET_KEY}"
 }
 
-
 resource "aws_vpc" "main" {
   cidr_block       = "10.0.0.0/16"
   tags {
@@ -70,6 +69,8 @@ resource "aws_internet_gateway" "gw" {
 }
 ###################################
 
+
+#### Public Route Table
 resource "aws_route_table" "r" {
   vpc_id = "${aws_vpc.main.id}"
   
@@ -77,7 +78,50 @@ resource "aws_route_table" "r" {
     cidr_block = "0.0.0.0/0"
     gateway_id = "${aws_internet_gateway.gw.id}"
   }
-
-
 }
 
+resource "aws_route_table_association" "a_1" {### public (asso), route to the IGW
+  subnet_id      = "${aws_subnet.Public-1.id}"
+  route_table_id = "${aws_route_table.r.id}"
+}
+resource "aws_route_table_association" "a_2" {### public (asso), route to the IGW
+  subnet_id      = "${aws_subnet.Public-2.id}"
+  route_table_id = "${aws_route_table.r.id}"
+}
+
+
+#### end ###
+
+
+
+#### CREATE NAT GATEWAY
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = "1"
+  subnet_id     = "${aws_subnet.Public-2.id}"
+}
+
+####
+
+#### Private Route Table
+resource "aws_route_table" "r_private" {
+  vpc_id = "${aws_vpc.main.id}"
+  
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = "${aws_nat_gateway.nat_gateway.id}"
+  }
+}
+
+
+resource "aws_route_table_association" "a_3" {### public (asso), route to the IGW
+  subnet_id      = "${aws_subnet.Private-1.id}"
+  route_table_id = "${aws_route_table.r_private.id}"
+}
+resource "aws_route_table_association" "a_4" {### public (asso), route to the IGW
+  subnet_id      = "${aws_subnet.Private-2.id}"
+  route_table_id = "${aws_route_table.r_private.id}"
+}
+
+
+
+#### end #### 
