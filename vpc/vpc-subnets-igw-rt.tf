@@ -15,7 +15,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-
 ### PUBLIC SUBNETS
 resource "aws_subnet" "Public-1" {
   vpc_id     = "${aws_vpc.main.id}"
@@ -92,11 +91,19 @@ resource "aws_route_table_association" "a_2" {### public (asso), route to the I
 
 #### end ###
 
+###Create EIP
+resource "aws_eip" "tuto_eip" {
+  vpc      = true
+  depends_on = ["aws_internet_gateway.gw"]
+}
 
+
+
+####
 
 #### CREATE NAT GATEWAY
 resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = "1"
+  allocation_id = "${aws_eip.tuto_eip.id}"
   subnet_id     = "${aws_subnet.Public-2.id}"
 }
 
@@ -112,7 +119,6 @@ resource "aws_route_table" "r_private" {
   }
 }
 
-
 resource "aws_route_table_association" "a_3" {### public (asso), route to the IGW
   subnet_id      = "${aws_subnet.Private-1.id}"
   route_table_id = "${aws_route_table.r_private.id}"
@@ -121,7 +127,4 @@ resource "aws_route_table_association" "a_4" {### public (asso), route to the I
   subnet_id      = "${aws_subnet.Private-2.id}"
   route_table_id = "${aws_route_table.r_private.id}"
 }
-
-
-
 #### end #### 
