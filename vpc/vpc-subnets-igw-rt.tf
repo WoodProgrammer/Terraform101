@@ -128,3 +128,30 @@ resource "aws_route_table_association" "a_4" {### public (asso), route to the I
   route_table_id = "${aws_route_table.r_private.id}"
 }
 #### end #### 
+
+
+### PROVISION EC2 Instances 
+
+
+
+
+resource "aws_instance" "bastion_host" {
+  
+  ami = "ami-02e680c4540db351e"
+
+  
+  subnet_id = "${aws_subnet.Public-1.id}"
+  associate_public_ip_address = true
+
+  instance_type = "t2.micro"
+
+  key_name = "my-key"
+
+  tags = {
+    Name = "BastionHost"
+  }
+}
+
+
+
+####
